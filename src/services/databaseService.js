@@ -5,10 +5,36 @@ class DatabaseService {
     this.tableName = tableName;
   }
 
+  // Set user token for authenticated operations
+  setUserToken(token) {
+    this.userToken = token;
+  }
+
+  // Get authenticated supabase client
+  getAuthenticatedClient() {
+    if (this.userToken) {
+      // Create a new client with the user's token
+      const { createClient } = require('@supabase/supabase-js');
+      const supabaseUrl = process.env.SUPABASE_URL;
+      const supabaseKey = process.env.SUPABASE_ANON_KEY;
+      
+      const authenticatedClient = createClient(supabaseUrl, supabaseKey, {
+        global: {
+          headers: {
+            Authorization: `Bearer ${this.userToken}`
+          }
+        }
+      });
+      return authenticatedClient;
+    }
+    return supabase;
+  }
+
   // Get all records
   async getAll() {
     try {
-      const { data, error } = await supabase
+      const client = this.getAuthenticatedClient();
+      const { data, error } = await client
         .from(this.tableName)
         .select('*')
         .order('created_at', { ascending: false });
@@ -23,7 +49,8 @@ class DatabaseService {
   // Get record by ID
   async getById(id) {
     try {
-      const { data, error } = await supabase
+      const client = this.getAuthenticatedClient();
+      const { data, error } = await client
         .from(this.tableName)
         .select('*')
         .eq('id', id)
@@ -39,7 +66,8 @@ class DatabaseService {
   // Create new record
   async create(record) {
     try {
-      const { data, error } = await supabase
+      const client = this.getAuthenticatedClient();
+      const { data, error } = await client
         .from(this.tableName)
         .insert([record])
         .select()
@@ -55,7 +83,8 @@ class DatabaseService {
   // Update record by ID
   async update(id, updates) {
     try {
-      const { data, error } = await supabase
+      const client = this.getAuthenticatedClient();
+      const { data, error } = await client
         .from(this.tableName)
         .update(updates)
         .eq('id', id)
@@ -72,7 +101,8 @@ class DatabaseService {
   // Delete record by ID
   async delete(id) {
     try {
-      const { data, error } = await supabase
+      const client = this.getAuthenticatedClient();
+      const { data, error } = await client
         .from(this.tableName)
         .delete()
         .eq('id', id)
@@ -92,7 +122,8 @@ class DatabaseService {
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
-      const { data, error, count } = await supabase
+      const client = this.getAuthenticatedClient();
+      const { data, error, count } = await client
         .from(this.tableName)
         .select('*', { count: 'exact' })
         .order('created_at', { ascending: false })
@@ -108,7 +139,8 @@ class DatabaseService {
   // Search records
   async search(searchTerm, searchColumns = ['title', 'description']) {
     try {
-      let query = supabase.from(this.tableName).select('*');
+      const client = this.getAuthenticatedClient();
+      let query = client.from(this.tableName).select('*');
       
       // Build OR conditions for search columns
       const orConditions = searchColumns.map(column => `${column}.ilike.%${searchTerm}%`);

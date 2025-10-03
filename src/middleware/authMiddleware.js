@@ -33,7 +33,8 @@ const authenticateToken = async (req, res, next) => {
       id: user.id,
       email: user.email,
       full_name: user.user_metadata?.full_name || '',
-      email_confirmed: user.email_confirmed_at ? true : false
+      email_confirmed: user.email_confirmed_at ? true : false,
+      token: token
     };
 
     next();
