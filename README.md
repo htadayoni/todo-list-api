@@ -1,6 +1,6 @@
 # Todo List REST API
 
-A simple and elegant REST API for managing todo items, built with Express.js.
+A simple and elegant REST API for managing todo items, built with Express.js and Supabase.
 
 ## Features
 
@@ -10,11 +10,14 @@ A simple and elegant REST API for managing todo items, built with Express.js.
 - 📝 Request logging with Morgan
 - ⚠️ Error handling middleware
 - 🎨 Clean and organized code structure
+- 🗄️ Supabase database integration
+- 🔐 Environment-based configuration
 
 ## Prerequisites
 
 - Node.js (v14 or higher)
 - npm or yarn
+- Supabase account and project
 
 ## Installation
 
@@ -36,9 +39,35 @@ cp .env.example .env
 
 4. Configure your environment variables in `.env`
 ```
-PORT=3000
+# Supabase Configuration
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+# Server Configuration
+PORT=5000
 NODE_ENV=development
 ```
+
+## Supabase Setup
+
+1. Create a Supabase project at [supabase.com](https://supabase.com)
+2. Go to your project dashboard and navigate to Settings > API
+3. Copy your Project URL and anon/public key
+4. Create a `todos` table in your Supabase database with the following structure:
+
+```sql
+CREATE TABLE todos (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT,
+  completed BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+5. Update your `.env` file with the Supabase credentials
 
 ## Running the Application
 
@@ -52,13 +81,13 @@ npm run dev
 npm start
 ```
 
-The server will start on `http://localhost:3000`
+The server will start on `http://localhost:5000`
 
 ## API Endpoints
 
 ### Base URL
 ```
-http://localhost:3000/api
+http://localhost:5000/api
 ```
 
 ### Endpoints
@@ -75,17 +104,17 @@ http://localhost:3000/api
 
 ### Get all todos
 ```bash
-curl http://localhost:3000/api/todos
+curl http://localhost:5000/api/todos
 ```
 
 ### Get a single todo
 ```bash
-curl http://localhost:3000/api/todos/1
+curl http://localhost:5000/api/todos/{uuid}
 ```
 
 ### Create a new todo
 ```bash
-curl -X POST http://localhost:3000/api/todos \
+curl -X POST http://localhost:5000/api/todos \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Learn Node.js",
@@ -95,7 +124,7 @@ curl -X POST http://localhost:3000/api/todos \
 
 ### Update a todo
 ```bash
-curl -X PUT http://localhost:3000/api/todos/1 \
+curl -X PUT http://localhost:5000/api/todos/{uuid} \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Updated title",
@@ -105,7 +134,7 @@ curl -X PUT http://localhost:3000/api/todos/1 \
 
 ### Delete a todo
 ```bash
-curl -X DELETE http://localhost:3000/api/todos/1
+curl -X DELETE http://localhost:5000/api/todos/{uuid}
 ```
 
 ## Request/Response Format
@@ -124,11 +153,12 @@ curl -X DELETE http://localhost:3000/api/todos/1
 {
   "success": true,
   "data": {
-    "id": "1",
+    "id": "123e4567-e89b-12d3-a456-426614174000",
     "title": "Learn Express.js",
     "description": "Build a REST API with Express.js",
     "completed": false,
-    "createdAt": "2025-10-01T12:00:00.000Z"
+    "created_at": "2025-10-01T12:00:00.000Z",
+    "updated_at": "2025-10-01T12:00:00.000Z"
   }
 }
 ```
@@ -146,15 +176,19 @@ curl -X DELETE http://localhost:3000/api/todos/1
 ```
 todo-list-api/
 ├── src/
+│   ├── config/
+│   │   └── supabase.js           # Supabase configuration
 │   ├── controllers/
-│   │   └── todoController.js    # Business logic for todos
+│   │   └── todoController.js     # Business logic for todos
+│   ├── services/
+│   │   └── databaseService.js    # Database operations
 │   ├── routes/
 │   │   └── todoRoutes.js         # API routes
 │   ├── middleware/
 │   │   └── errorMiddleware.js    # Error handling
 │   ├── app.js                    # Express app configuration
 │   └── server.js                 # Server entry point
-├── .env.example                  # Environment variables template
+├── .env                          # Environment variables
 ├── .gitignore                    # Git ignore rules
 ├── package.json                  # Project dependencies
 └── README.md                     # Project documentation
@@ -163,6 +197,7 @@ todo-list-api/
 ## Technologies Used
 
 - **Express.js** - Fast, unopinionated web framework for Node.js
+- **Supabase** - Backend-as-a-Service with PostgreSQL database
 - **CORS** - Enable Cross-Origin Resource Sharing
 - **Morgan** - HTTP request logger middleware
 - **dotenv** - Environment variable management
@@ -170,13 +205,14 @@ todo-list-api/
 
 ## Future Enhancements
 
-- [ ] Add database integration (MongoDB, PostgreSQL)
+- [x] Add database integration (Supabase/PostgreSQL)
 - [ ] Implement authentication & authorization
 - [ ] Add input validation
 - [ ] Write unit and integration tests
 - [ ] Add API documentation with Swagger
 - [ ] Implement pagination for large datasets
 - [ ] Add filtering and sorting capabilities
+- [ ] Add real-time subscriptions with Supabase
 
 ## Contributing
 
