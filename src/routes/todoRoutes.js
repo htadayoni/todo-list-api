@@ -7,6 +7,10 @@ const {
   updateTodo,
   deleteTodo
 } = require('../controllers/todoController');
+const { authenticateToken } = require('../middleware/authMiddleware');
+
+// Apply authentication middleware to all todo routes
+router.use(authenticateToken);
 
 // GET all todos
 router.get('/', getTodos);

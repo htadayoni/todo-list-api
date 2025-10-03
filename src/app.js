@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const todoRoutes = require('./routes/todoRoutes');
+const authRoutes = require('./routes/authRoutes');
 const { errorHandler, notFound } = require('./middleware/errorMiddleware');
 
 const app = express();
@@ -18,11 +19,13 @@ app.get('/', (req, res) => {
     message: 'Welcome to Todo List API',
     version: '1.0.0',
     endpoints: {
+      auth: '/api/auth',
       todos: '/api/todos'
     }
   });
 });
 
+app.use('/api/auth', authRoutes);
 app.use('/api/todos', todoRoutes);
 
 // Error Handling Middleware
